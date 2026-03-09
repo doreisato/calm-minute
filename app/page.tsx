@@ -1,94 +1,121 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
-const TOTAL_SECONDS = 60;
+type Energy = "low" | "medium" | "high";
+type Social = "solo" | "pair" | "group";
+type Place = "indoor" | "outdoor" | "either";
+
+interface Adventure {
+  title: string;
+  duration: string;
+  energy: Energy;
+  social: Social | "any";
+  place: Place;
+  prompt: string;
+}
+
+const ADVENTURES: Adventure[] = [
+  { title: "Photo Quest", duration: "20 min", energy: "low", social: "solo", place: "either", prompt: "Find and capture 5 textures that look beautiful in black-and-white." },
+  { title: "Tiny Kindness Loop", duration: "15 min", energy: "low", social: "solo", place: "either", prompt: "Do one small kindness: thank a worker, leave a kind note, or text appreciation." },
+  { title: "Sunset Micro-Walk", duration: "30 min", energy: "medium", social: "pair", place: "outdoor", prompt: "Take a short walk and each share one thing that felt meaningful this week." },
+  { title: "Park Bench Reset", duration: "25 min", energy: "low", social: "solo", place: "outdoor", prompt: "Sit quietly, breathe deeply for 2 minutes, then journal 3 calming observations." },
+  { title: "Curiosity Sprint", duration: "30 min", energy: "medium", social: "solo", place: "indoor", prompt: "Learn one surprising thing about a topic you love and explain it simply." },
+  { title: "Neighborhood Treasure Hunt", duration: "45 min", energy: "high", social: "group", place: "outdoor", prompt: "Find 7 items of specific colors in your neighborhood and snap one group photo." },
+  { title: "No-Phone Tea Break", duration: "20 min", energy: "low", social: "pair", place: "indoor", prompt: "Make tea or water, no phones, and ask each other one unexpectedly deep question." },
+  { title: "Mood-Lift Playlist Walk", duration: "35 min", energy: "medium", social: "solo", place: "either", prompt: "Pick 3 songs that boost your mood and walk until all three finish." },
+  { title: "Laugh Relay", duration: "15 min", energy: "medium", social: "group", place: "indoor", prompt: "Each person shares one funny memory; vote the best and recreate it in 1 photo." },
+  { title: "Micro-Museum", duration: "25 min", energy: "low", social: "pair", place: "indoor", prompt: "Pick 5 ordinary objects, arrange an exhibit, and narrate each object’s backstory." }
+];
+
+function pickThree(list: Adventure[]) {
+  const copy = [...list];
+  const out: Adventure[] = [];
+  while (copy.length && out.length < 3) {
+    const idx = Math.floor(Math.random() * copy.length);
+    out.push(copy.splice(idx, 1)[0]);
+  }
+  return out;
+}
 
 export default function Home() {
-  const [running, setRunning] = useState(false);
-  const [secondsLeft, setSecondsLeft] = useState(TOTAL_SECONDS);
+  const [minutes, setMinutes] = useState(30);
+  const [energy, setEnergy] = useState<Energy>("medium");
+  const [social, setSocial] = useState<Social>("solo");
+  const [place, setPlace] = useState<Place>("either");
+  const [results, setResults] = useState<Adventure[]>([]);
 
-  useEffect(() => {
-    if (!running) return;
-    const t = setInterval(() => {
-      setSecondsLeft((s) => {
-        if (s <= 1) {
-          setRunning(false);
-          return 0;
-        }
-        return s - 1;
-      });
-    }, 1000);
-    return () => clearInterval(t);
-  }, [running]);
-
-  const phase = useMemo(() => {
-    const elapsed = TOTAL_SECONDS - secondsLeft;
-    const cycle = elapsed % 12;
-    if (cycle < 4) return "Inhale";
-    if (cycle < 8) return "Hold";
-    return "Exhale";
-  }, [secondsLeft]);
-
-  const progress = ((TOTAL_SECONDS - secondsLeft) / TOTAL_SECONDS) * 100;
+  const filtered = useMemo(() => {
+    return ADVENTURES.filter((a) => {
+      const durationOk = parseInt(a.duration, 10) <= minutes;
+      const energyOk = a.energy === energy || (energy === "medium" && a.energy !== "high");
+      const socialOk = a.social === "any" || a.social === social;
+      const placeOk = place === "either" || a.place === place || a.place === "either";
+      return durationOk && energyOk && socialOk && placeOk;
+    });
+  }, [minutes, energy, social, place]);
 
   return (
     <main className="min-h-screen bg-[#0A0A0A] text-white flex flex-col">
-      <div className="max-w-[680px] w-full mx-auto px-6 py-14 flex-1 flex flex-col justify-center">
-        <p className="text-[11px] uppercase tracking-[0.2em] text-neutral-500 mb-3">Calm Minute</p>
-        <h1 className="text-4xl font-semibold leading-tight mb-3">Reset your stress in 60 seconds.</h1>
-        <p className="text-neutral-400 mb-8">Follow one guided breathing cycle. No account, no tracking, no pressure.</p>
+      <div className="max-w-[760px] w-full mx-auto px-6 py-14 flex-1">
+        <p className="text-[11px] uppercase tracking-[0.2em] text-neutral-500 mb-3">MicroAdventure Roulette</p>
+        <h1 className="text-4xl font-semibold leading-tight mb-3">Spin a joyful plan for right now.</h1>
+        <p className="text-neutral-400 mb-8">Pick your time, energy, and vibe. Get 3 instant mini-adventures you can do today.</p>
 
-        <section className="border border-neutral-800 rounded-2xl bg-neutral-950/70 p-8 mb-6 text-center">
-          <p className="text-xs uppercase tracking-[0.18em] text-neutral-500 mb-3">Current cue</p>
-          <h2 className="text-4xl font-semibold mb-4">{running || secondsLeft === 0 ? phase : "Ready"}</h2>
-          <p className="text-7xl font-semibold tabular-nums mb-5">{secondsLeft}s</p>
-          <div className="w-full h-2 bg-neutral-900 rounded-full overflow-hidden mb-6">
-            <div className="h-full bg-white transition-all duration-1000" style={{ width: `${progress}%` }} />
+        <section className="border border-neutral-800 rounded-2xl bg-neutral-950/70 p-6 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <label className="text-sm text-neutral-300">Minutes free
+              <input type="range" min={10} max={90} step={5} value={minutes} onChange={(e) => setMinutes(Number(e.target.value))} className="w-full mt-2" />
+              <span className="text-xs text-neutral-500">{minutes} minutes</span>
+            </label>
+
+            <label className="text-sm text-neutral-300">Energy
+              <select value={energy} onChange={(e) => setEnergy(e.target.value as Energy)} className="w-full mt-2 bg-black border border-neutral-700 rounded-lg px-3 py-2">
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+              </select>
+            </label>
+
+            <label className="text-sm text-neutral-300">Social
+              <select value={social} onChange={(e) => setSocial(e.target.value as Social)} className="w-full mt-2 bg-black border border-neutral-700 rounded-lg px-3 py-2">
+                <option value="solo">Solo</option>
+                <option value="pair">With 1 person</option>
+                <option value="group">Group</option>
+              </select>
+            </label>
+
+            <label className="text-sm text-neutral-300">Place
+              <select value={place} onChange={(e) => setPlace(e.target.value as Place)} className="w-full mt-2 bg-black border border-neutral-700 rounded-lg px-3 py-2">
+                <option value="either">Either</option>
+                <option value="indoor">Indoor</option>
+                <option value="outdoor">Outdoor</option>
+              </select>
+            </label>
           </div>
 
-          <div className="flex gap-3 justify-center">
-            {!running ? (
-              <button
-                onClick={() => {
-                  if (secondsLeft === 0) setSecondsLeft(TOTAL_SECONDS);
-                  setRunning(true);
-                }}
-                className="px-6 py-3 rounded-xl bg-white text-black text-sm font-semibold hover:bg-neutral-200"
-              >
-                {secondsLeft === 0 ? "Run again" : "Start 60-second reset"}
-              </button>
-            ) : (
-              <button onClick={() => setRunning(false)} className="px-6 py-3 rounded-xl border border-neutral-700 text-sm text-neutral-300 hover:text-white">
-                Pause
-              </button>
-            )}
-            <button
-              onClick={() => {
-                setRunning(false);
-                setSecondsLeft(TOTAL_SECONDS);
-              }}
-              className="px-6 py-3 rounded-xl border border-neutral-700 text-sm text-neutral-300 hover:text-white"
-            >
-              Reset
-            </button>
+          <div className="flex gap-3">
+            <button onClick={() => setResults(pickThree(filtered.length ? filtered : ADVENTURES))} className="px-5 py-3 rounded-xl bg-white text-black text-sm font-semibold hover:bg-neutral-200">Spin 3 adventures</button>
+            <button onClick={() => setResults([])} className="px-5 py-3 rounded-xl border border-neutral-700 text-sm text-neutral-300 hover:text-white">Reset</button>
           </div>
         </section>
 
-        <section className="border border-neutral-800 rounded-2xl bg-neutral-950/70 p-6">
-          <h3 className="text-lg font-medium mb-2">How to use it</h3>
-          <ol className="list-decimal pl-5 text-sm text-neutral-300 space-y-1">
-            <li>Sit down and place both feet on the floor.</li>
-            <li>Follow the cue: inhale, hold, exhale.</li>
-            <li>Complete one minute before your next task.</li>
-          </ol>
-          <p className="text-xs text-neutral-500 mt-4">Educational wellness tool only. Not medical or mental health treatment.</p>
+        <section className="space-y-3">
+          {results.length === 0 ? (
+            <div className="border border-neutral-800 rounded-xl p-5 text-sm text-neutral-400">Press <span className="text-white">Spin 3 adventures</span> to get instant joy-ready ideas.</div>
+          ) : (
+            results.map((r, i) => (
+              <article key={`${r.title}-${i}`} className="border border-neutral-800 rounded-xl p-5 bg-neutral-950/70">
+                <h2 className="text-lg font-medium">{r.title}</h2>
+                <p className="text-xs uppercase tracking-[0.14em] text-neutral-500 mt-1">{r.duration} • {r.place}</p>
+                <p className="text-sm text-neutral-300 mt-3">{r.prompt}</p>
+              </article>
+            ))
+          )}
         </section>
+
+        <p className="text-xs text-neutral-500 mt-8">For inspiration only. Verify local conditions and stay in safe public spaces.</p>
       </div>
-
-      <footer className="border-t border-neutral-900 py-6 text-center text-xs text-neutral-600">
-        Built by <a href="https://infinite-machines-production.up.railway.app" className="text-neutral-500 hover:text-white">Infinite Machines</a>
-      </footer>
     </main>
   );
 }
