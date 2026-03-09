@@ -58,9 +58,9 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-[#0A0A0A] text-white flex flex-col">
       <div className="max-w-[760px] w-full mx-auto px-6 py-14 flex-1">
-        <p className="text-[11px] uppercase tracking-[0.2em] text-neutral-500 mb-3">MicroAdventure Roulette</p>
-        <h1 className="text-4xl font-semibold leading-tight mb-3">Spin a joyful plan for right now.</h1>
-        <p className="text-neutral-400 mb-8">Pick your time, energy, and vibe. Get 3 instant mini-adventures you can do today.</p>
+        <p className="text-[11px] uppercase tracking-[0.2em] text-neutral-500 mb-3">Joy Break Roulette</p>
+        <h1 className="text-4xl font-semibold leading-tight mb-3">Get 3 tiny plans to lift your mood in minutes.</h1>
+        <p className="text-neutral-400 mb-8">Pick your time, energy, and vibe. Spin short joy-break ideas you can actually do today.</p>
 
         <section className="border border-neutral-800 rounded-2xl bg-neutral-950/70 p-6 mb-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -102,7 +102,7 @@ export default function Home() {
 
         <section className="space-y-3">
           {results.length === 0 ? (
-            <div className="border border-neutral-800 rounded-xl p-5 text-sm text-neutral-400">Press <span className="text-white">Spin 3 adventures</span> to get instant joy-ready ideas.</div>
+            <div className="border border-neutral-800 rounded-xl p-5 text-sm text-neutral-400">Press <span className="text-white">Spin 3 adventures</span> to get a quick joy break you can do right now.</div>
           ) : (
             results.map((r, i) => (
               <article key={`${r.title}-${i}`} className="border border-neutral-800 rounded-xl p-5 bg-neutral-950/70">
