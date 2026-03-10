@@ -64,7 +64,7 @@ export default function Home() {
     <main className="min-h-screen bg-[#0A0A0A] text-white flex flex-col">
       <div className="max-w-[760px] w-full mx-auto px-6 py-14 flex-1">
         <p className="text-[11px] uppercase tracking-[0.2em] text-neutral-500 mb-3">Joy Break Roulette</p>
-        <h1 className="text-4xl font-semibold leading-tight mb-3">Get 3 tiny plans to lift your mood in minutes.</h1>
+        <h1 className="text-4xl font-semibold leading-tight mb-3">Get 3 tiny plans for joy, calm, curiosity, or connection.</h1>
         <p className="text-neutral-400 mb-2">Pick your time, energy, and vibe. Spin short joy-break ideas you can actually do today.</p>
         <p className="text-neutral-500 text-sm mb-8">Free. No login. Works in one tap.</p>
 
